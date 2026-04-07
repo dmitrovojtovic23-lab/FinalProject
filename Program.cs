@@ -4,6 +4,7 @@ using FinalProject.BLL.Services;
 using FinalProject.BLL.Mapping;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using AutoMapper;
 using Telegram.Bot;
 using FinalProject.API.Services;
 using Quartz;
@@ -16,6 +17,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 builder.Host.UseSerilog();
+builder.Host.UseWindowsService();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -30,7 +32,10 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<IReminderService, ReminderService>();
 
-builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+var mappingConfig = new MapperConfiguration(mc => mc.AddProfile(new AutoMapperProfile()));
+IMapper mapper = mappingConfig.CreateMapper();
+builder.Services.AddSingleton(mappingConfig);
+builder.Services.AddSingleton<IMapper>(mapper);
 
 builder.Services.AddSingleton<ITelegramBotClient>(sp =>
 {
